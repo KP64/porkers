@@ -1,0 +1,7 @@
+# Nix
+.direnv
+result
+
+# Rust
+mutants.out*
+/target

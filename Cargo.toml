@@ -1,0 +1,11 @@
+[package]
+name = "porkers"
+version = "0.1.0"
+edition = "2024"
+publish = false                                # TODO: reenable once ready
+license-file = "UNLICENSE"
+readme = "README.md"
+homepage = "https://github.com/KP64/porkers"
+repository = "https://github.com/KP64/porkers"
+
+[dependencies]
