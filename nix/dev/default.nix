@@ -26,11 +26,13 @@
       devShells.default = pkgs.mkShell {
         name = "porkers";
 
-        inputsFrom = [ self'.packages.default ];
+        inputsFrom = builtins.attrValues self'.packages;
 
         packages = with pkgs; [
           # Nix lsp ❄️
           nil
+
+          lldb
 
           # Dependencies 📦
           cargo-edit

@@ -17,8 +17,6 @@
   outputs =
     inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      debug = true;
-
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
 
       imports = [ flake-parts.flakeModules.partitions ];
@@ -42,12 +40,7 @@
           ...
         }:
         let
-          toolchain = inputs'.fenix.packages.fromToolchainFile {
-            file = ./rust-toolchain.toml;
-            sha256 = "sha256-2eWc3xVTKqg5wKSHGwt1XoM/kUBC6y3MWfKg74Zn+fY=";
-          };
-
-          craneLib = (inputs.crane.mkLib pkgs).overrideToolchain (_: toolchain);
+          craneLib = (inputs.crane.mkLib pkgs).overrideToolchain inputs'.fenix.packages.stable.toolchain;
 
           commonArgs = {
             src = craneLib.cleanCargoSource ./.;
@@ -71,7 +64,13 @@
             );
             porkersDoc = craneLib.cargoDoc (commonArgs // { inherit cargoArtifacts; });
             porkersDeny = craneLib.cargoDeny { inherit (commonArgs) src; };
-            porkersNextest = craneLib.cargoNextest (commonArgs // { inherit cargoArtifacts; });
+            porkersNextest = craneLib.cargoNextest (
+              commonArgs
+              // {
+                inherit cargoArtifacts;
+                cargoExtraArgs = "--no-tests warn"; # TODO: remove when tests are implemented
+              }
+            );
           };
         };
     };
