@@ -7,15 +7,15 @@ use std::collections::BTreeMap;
 
 /// Wrapper for (De)Serializing all TLD Prices
 #[derive(Deserialize, Debug)]
-pub struct TLDPricingResponse {
+pub struct TldPricingResponse {
     /// Pricing map of each TLD
-    pub pricing: BTreeMap<String, TLDPricing>,
+    pub pricing: BTreeMap<String, TldPricing>,
 
     /// Porkbun returned [Status]
     pub status: Status,
 }
 
-impl fmt::Display for TLDPricingResponse {
+impl fmt::Display for TldPricingResponse {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Status: {}", self.status)?;
 
@@ -32,8 +32,8 @@ impl fmt::Display for TLDPricingResponse {
 
 /// Contains the fees for each operation of a TLD
 #[derive(Deserialize, Debug, Clone, Copy)]
-#[serde(try_from = "TLDPricingWire")]
-pub struct TLDPricing {
+#[serde(try_from = "TldPricingWire")]
+pub struct TldPricing {
     /// Registration fee
     pub registration: f32,
 
@@ -46,7 +46,7 @@ pub struct TLDPricing {
 
 /// Struct to intermediately store the pricing of a TLD
 #[derive(Deserialize)]
-struct TLDPricingWire {
+struct TldPricingWire {
     /// Registration fee
     registration: String,
 
@@ -57,10 +57,10 @@ struct TLDPricingWire {
     transfer: String,
 }
 
-impl TryFrom<TLDPricingWire> for TLDPricing {
+impl TryFrom<TldPricingWire> for TldPricing {
     type Error = ParseFloatError;
 
-    fn try_from(value: TLDPricingWire) -> Result<Self, Self::Error> {
+    fn try_from(value: TldPricingWire) -> Result<Self, Self::Error> {
         let parse_price_to_float = |mut price: String| {
             price.retain(|character| character != ',');
             price.parse()
@@ -92,7 +92,7 @@ impl fmt::Display for PingResponse {
 
 /// Check default domain pricing information for all supported TLDs. This command does not require authentication.
 #[expect(clippy::missing_errors_doc, reason = "WIP")]
-pub async fn domain_pricing() -> Result<TLDPricingResponse, reqwest::Error> {
+pub async fn domain_pricing() -> Result<TldPricingResponse, reqwest::Error> {
     reqwest::get("https://api.porkbun.com/api/json/v3/pricing/get")
         .await?
         .json()

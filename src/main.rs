@@ -6,7 +6,7 @@ use anyhow::Context as _;
 use clap::{Args, Parser, Subcommand, ValueHint};
 use config::{Config, File};
 use core::net::IpAddr;
-use porkers::{Credentials, domain::glue, general};
+use porkers::{Credentials, domain::glue, general, ssl};
 use reqwest as _;
 use serde as _;
 use std::{
@@ -28,7 +28,7 @@ struct DomainArgs {
 /// Clap argument to require at least one ip to be provided.
 /// This is especially useful to fulfill the invariant for [Vec1]
 #[derive(Args, Debug, Clone)]
-struct IPArgs {
+struct IpArgs {
     /// IPs passed into by the cli
     #[arg(long, required = true)]
     ips: Vec<IpAddr>,
@@ -64,6 +64,17 @@ enum Cli {
         #[command(subcommand)]
         subcommand: GlueCmd,
     },
+
+    /// SSL bundle retrieval command
+    Ssl {
+        /// Path to the credentials
+        #[command(flatten)]
+        credential_path: CredentialsArg,
+
+        /// Corresponding domain of the certificate
+        #[command(flatten)]
+        domain: DomainArgs,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -76,7 +87,7 @@ enum GeneralCmd {
     },
 
     /// Get the pricing listing of all TLDs
-    TLDPricing,
+    TldPricing,
 }
 
 #[derive(Subcommand, Debug)]
@@ -89,7 +100,7 @@ enum GlueCmd {
 
         /// IPs to be associated with the [NS](GlueCmd::Create::glue_host_subdomain)
         #[command(flatten)]
-        ips: IPArgs,
+        ips: IpArgs,
     },
 
     /// Delete an existing Glue record
@@ -110,7 +121,7 @@ enum GlueCmd {
 
         /// IPs to replace the current ones for the [NS](GlueCmd::Update::glue_host_subdomain)
         #[command(flatten)]
-        ips: IPArgs,
+        ips: IpArgs,
     },
 }
 
@@ -144,8 +155,16 @@ async fn main() -> anyhow::Result<()> {
     let mut stdout = io::stdout();
 
     match cli {
+        Cli::Ssl {
+            credential_path,
+            domain,
+        } => {
+            let creds = parse_credentials_from_file(&credential_path.credential_path)?;
+            let bundle = ssl::retrieve_bundle(&creds, &domain.domain).await?;
+            writeln!(stdout, "{bundle}")?;
+        }
         Cli::General { subcommand } => match subcommand {
-            GeneralCmd::TLDPricing => {
+            GeneralCmd::TldPricing => {
                 let pricing = general::domain_pricing().await?;
                 writeln!(stdout, "{pricing}")?;
             }
