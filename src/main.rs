@@ -1,5 +1,6 @@
 //! A client to use the porkbun api
 // TODO: Clap completions
+// TODO: Support IPv4 Only Hostname
 
 use anyhow::Context as _;
 use clap::{Args, Parser, Subcommand, ValueHint};
@@ -67,6 +68,13 @@ enum Cli {
 
 #[derive(Subcommand, Debug)]
 enum GeneralCmd {
+    /// Test the authentication to porkbun
+    Ping {
+        /// Path to the credentials
+        #[command(flatten)]
+        credential_path: CredentialsArg,
+    },
+
     /// Get the pricing listing of all TLDs
     TLDPricing,
 }
@@ -138,8 +146,13 @@ async fn main() -> anyhow::Result<()> {
     match cli {
         Cli::General { subcommand } => match subcommand {
             GeneralCmd::TLDPricing => {
-                let pricing = general::get().await?;
+                let pricing = general::domain_pricing().await?;
                 writeln!(stdout, "{pricing}")?;
+            }
+            GeneralCmd::Ping { credential_path } => {
+                let creds = parse_credentials_from_file(&credential_path.credential_path)?;
+                let response = general::ping(&creds).await?;
+                writeln!(stdout, "{response}")?;
             }
         },
         Cli::Glue {
