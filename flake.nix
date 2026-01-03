@@ -64,13 +64,7 @@
             );
             porkersDoc = craneLib.cargoDoc (commonArgs // { inherit cargoArtifacts; });
             porkersDeny = craneLib.cargoDeny { inherit (commonArgs) src; };
-            porkersNextest = craneLib.cargoNextest (
-              commonArgs
-              // {
-                inherit cargoArtifacts;
-                cargoExtraArgs = "--no-tests warn"; # TODO: remove when tests are implemented
-              }
-            );
+            porkersNextest = craneLib.cargoNextest (commonArgs // { inherit cargoArtifacts; });
           };
         };
     };

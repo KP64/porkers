@@ -177,3 +177,14 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Cli;
+    use clap::CommandFactory as _;
+
+    #[test]
+    fn valid_cli_conf() {
+        Cli::command().debug_assert();
+    }
+}
