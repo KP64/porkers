@@ -1,5 +1,6 @@
 #![expect(clippy::std_instead_of_alloc, reason = "False Positive for BTreeMap")]
 
+use crate::Status;
 use core::{fmt, num::ParseFloatError};
 use serde::Deserialize;
 use std::collections::BTreeMap;
@@ -10,8 +11,8 @@ pub struct TLDPricingResponse {
     /// Pricing map of each TLD
     pub pricing: BTreeMap<String, TLDPricing>,
 
-    /// Status
-    pub status: super::Status,
+    /// Porkbun returned [Status]
+    pub status: Status,
 }
 
 impl fmt::Display for TLDPricingResponse {
@@ -25,7 +26,6 @@ impl fmt::Display for TLDPricingResponse {
             writeln!(f, "  Renewal: {}", pricing.renewal)?;
             write!(f, "  Transfer: {}", pricing.transfer)?;
         }
-
         Ok(())
     }
 }
@@ -61,11 +61,10 @@ impl TryFrom<TLDPricingWire> for TLDPricing {
     type Error = ParseFloatError;
 
     fn try_from(value: TLDPricingWire) -> Result<Self, Self::Error> {
-        #[expect(clippy::missing_errors_doc, reason = "WIP")]
-        fn parse_price_to_float(mut price: String) -> Result<f32, ParseFloatError> {
+        let parse_price_to_float = |mut price: String| {
             price.retain(|character| character != ',');
             price.parse()
-        }
+        };
         Ok(Self {
             registration: parse_price_to_float(value.registration)?,
             renewal: parse_price_to_float(value.renewal)?,

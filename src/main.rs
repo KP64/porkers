@@ -116,6 +116,17 @@ fn parse_credentials_from_file(credential_file_path: &Path) -> anyhow::Result<Cr
         .try_deserialize::<Credentials>()?)
 }
 
+#[expect(
+    clippy::allow_attributes,
+    reason = "Lints are apparently unfulfilled if expected. 
+              This doesn't make sense because of the reason below.
+              Most likely an issue in Clippy"
+)]
+#[allow(
+    clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
+    reason = "Docs apparently missing."
+)]
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
