@@ -59,11 +59,13 @@
 
           # Misc ❔
           cargo-msrv
+          cargo-sort
           typos
 
           # Next gen testing 🧪
           cargo-nextest
           cargo-flamegraph
+          cargo-hack
           cargo-mutants
           cargo-tarpaulin
 
