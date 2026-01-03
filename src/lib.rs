@@ -1,5 +1,5 @@
 //! The porkers library
-// # TODO: Documentation
+// TODO: Documentation
 
 /// DNS Functionality
 pub mod dns;
@@ -13,27 +13,30 @@ pub mod general;
 /// SSL Functionality
 pub mod ssl;
 
-use core::fmt;
-
 use anyhow as _;
 use clap as _;
 use config as _;
+use core::fmt;
 use serde::{Deserialize, Serialize};
 use thiserror as _;
 use tokio as _;
 
-#[expect(missing_docs, reason = "WIP")]
+/// The credentials used to access the Porkbun API
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Credentials {
+    /// API key
     #[serde(rename = "apikey")]
     pub api_key: String,
+
+    /// Secret API key
     #[serde(rename = "secretapikey")]
     pub secret_api_key: String,
 }
 
 impl fmt::Display for Credentials {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "api_key: <REDACTED>\nsecret_api_key: <REDACTED>")
+        writeln!(f, "api_key: <REDACTED>")?;
+        write!(f, "secret_api_key: <REDACTED>")
     }
 }
 
