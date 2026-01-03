@@ -1,7 +1,8 @@
 //! A client to use the porkbun api
+// TODO: Clap completions
 
 use anyhow::Context as _;
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueHint};
 use config::{Config, File};
 use core::net::IpAddr;
 use porkers::{Credentials, domain::glue, general};
@@ -17,7 +18,7 @@ use vec1::Vec1;
 /// Clap argument for Domain.
 /// This allows us to check for valid Domains
 #[derive(Args, Debug, Clone)]
-struct Domain {
+struct DomainArgs {
     /// The actual domain used
     #[arg(long)]
     domain: String,
@@ -26,7 +27,7 @@ struct Domain {
 /// Clap argument to require at least one ip to be provided.
 /// This is especially useful to fulfill the invariant for [Vec1]
 #[derive(Args, Debug, Clone)]
-struct IPs {
+struct IPArgs {
     /// IPs passed into by the cli
     #[arg(long, required = true)]
     ips: Vec<IpAddr>,
@@ -35,12 +36,12 @@ struct IPs {
 #[derive(Args, Debug, Clone)]
 struct CredentialsArg {
     /// The full path to the file that deserializes into the credentials
-    #[arg(long, value_name = "FILE")]
+    #[arg(long, value_name = "FILE", value_hint = ValueHint::FilePath)]
     credential_path: PathBuf,
 }
 
 #[derive(Parser)]
-#[command(version, about,long_about = None)]
+#[command(version, author, about, rename_all_env = "SCREAMING_SNAKE_CASE")]
 enum Cli {
     /// Command for misc operations
     General {
@@ -56,7 +57,7 @@ enum Cli {
 
         /// The domain that will be affected by the [subcommand](Cli::Glue::subcommand)
         #[command(flatten)]
-        domain: Domain,
+        domain: DomainArgs,
 
         /// Command to perform on the Glue record
         #[command(subcommand)]
@@ -76,18 +77,18 @@ enum GlueCmd {
     Create {
         /// The new subdomain the NS should live under
         #[command(flatten)]
-        glue_host_subdomain: Domain,
+        glue_host_subdomain: DomainArgs,
 
         /// IPs to be associated with the [NS](GlueCmd::Create::glue_host_subdomain)
         #[command(flatten)]
-        ips: IPs,
+        ips: IPArgs,
     },
 
     /// Delete an existing Glue record
     Delete {
         /// Subdomain of the NS to delete
         #[command(flatten)]
-        glue_host_subdomain: Domain,
+        glue_host_subdomain: DomainArgs,
     },
 
     /// Get all glue records of the domain
@@ -97,11 +98,11 @@ enum GlueCmd {
     Update {
         /// Subdomain of the NS
         #[command(flatten)]
-        glue_host_subdomain: Domain,
+        glue_host_subdomain: DomainArgs,
 
         /// IPs to replace the current ones for the [NS](GlueCmd::Update::glue_host_subdomain)
         #[command(flatten)]
-        ips: IPs,
+        ips: IPArgs,
     },
 }
 
